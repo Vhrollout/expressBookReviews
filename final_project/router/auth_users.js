@@ -36,7 +36,6 @@ const authenticatedUser = (username, password) => {
 regd_users.post("/register", (req, res) => {
   const username = req.body.username;
   const password = req.body.password;
-  console.log(username, password)
 
   // Check if both username and password are provided
   if (username && password) {
@@ -54,17 +53,30 @@ regd_users.post("/register", (req, res) => {
 });
 
 //only registered users can login
+// Login endpoint
 regd_users.post("/login", (req, res) => {
-  const username = req.body.username; // Use req.body instead of req.params
+  const username = req.body.username;
   const password = req.body.password;
 
-  let filterUser = users.filter((user) => user.username === username && user.password === password);
+  // Check if username or password is missing
+  if (!username || !password) {
+    return res.status(404).json({ message: "Error logging in" });
+  }
 
+  // Authenticate user
+  if (authenticatedUser(username, password)) {
+    // Generate JWT access token
+    let accessToken = jwt.sign({
+      data: password
+    }, 'access', { expiresIn: 60 * 60 });
 
-  if (filterUser.length > 0) {
-    res.send("You're successfully logged in!");
+    // Store access token and username in session
+    req.session.authorization = {
+      accessToken, username
+    }
+    return res.status(200).send("User successfully logged in");
   } else {
-    res.status(401).json({ message: "Invalid credentials. Try again!" });
+    return res.status(208).json({ message: "Invalid Login. Check username and password" });
   }
 });
 

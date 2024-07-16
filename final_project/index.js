@@ -1,8 +1,10 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const session = require('express-session')
+const session = require('express-session');
+const { promiseBased } = require('./router/promiseRoute.js');
 const customer_routes = require('./router/auth_users.js').authenticated;
 const genl_routes = require('./router/general.js').general;
+const async_route = require('./router/promiseRoute.js').promiseBased;
 
 const app = express();
 
@@ -28,10 +30,11 @@ app.use("/customer/auth/*", function auth(req,res,next){
         return res.status(403).json({ message: "User not logged in" });
     }
 });
- 
+
 const PORT =5000;
 
 app.use("/customer", customer_routes);
 app.use("/", genl_routes);
+app.use("/promise", async_route)
 
 app.listen(PORT,()=>console.log("Server is running"));
