@@ -80,25 +80,36 @@ regd_users.post("/login", (req, res) => {
   }
 });
 
+const isAuthenticated = (req, res, next) => {
+  // Check if the user is authenticated (e.g., using JWT or session)
+  // You can access the user's session or token here
+  // For example:
+  const { authorization } = req.session;
+  if (!authorization || !authorization.accessToken) {
+    return res.status(401).json({ message: "Unauthorized. Please log in." });
+  }
+  // User is authenticated; proceed to the next middleware or route handler
+  next();
+};
+
+
 
 // Add a book review
-regd_users.put("/review/:isbn", (req, res) => {
+regd_users.put("/review/:isbn", isAuthenticated, (req, res) => {
   //Write your code here
-  let isbn = req.params.isbn;
-  let book = books[isbn];
-  let review = book.reviews;
+  let book = books[req.params.isbn];
+  let reviewText = req.body.review;
+  console.log(reviewText);
 
-
-  if (review) {
-    book.reviews = "my first revievw";
+  if (book) {
+    book.reviews = reviewText;
     res.json(`the ${book.title} is reviewd`);
   } else {
     return res.status(300).json({ message: "review is not added" });
   }
-  
 });
 
-regd_users.delete("/review/:isbn", (req, res) => {
+regd_users.delete("/review/:isbn", isAuthenticated, (req, res) => {
   let isbn = req.params.isbn;
   let book = books[isbn];
   let review = book.reviews;
